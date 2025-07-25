@@ -38,7 +38,10 @@ class DeliveryController extends Controller
     public function create()
     {
         $couriers = User::all();
-        $pakets = Paket::with('detail', 'location')->where('status', 'Pending')->get();
+        // $pakets = Paket::with('detail', 'location')->where('status', 'Pending')->get();
+        $pakets = Paket::with('detail')
+            ->whereDoesntHave('deliveryDetails')
+            ->get();
         // dd($pakets->toArray());
         return view('deliveries.partials.create', compact('couriers', 'pakets'));
     }
@@ -86,6 +89,9 @@ class DeliveryController extends Controller
                 ]);
             }
 
+            $this->getOptimizedRoute($existingDelivery->kode_pengiriman);
+
+
             DB::commit();
             return redirect()->route('deliveries.index')->with(['success' => 'Paket berhasil diassign ke pengiriman', 'kode_paket' => $kode_pengiriman]);
         } catch (\Exception $e) {
@@ -112,18 +118,55 @@ class DeliveryController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        //
+        $delivery = Delivery::with('pakets.detail')->findOrFail($id);
+        $couriers = User::all();
+
+        $pakets = Paket::with('detail')->where(function ($query) use ($delivery) {
+            $query->whereDoesntHave('deliveryDetails') // belum pernah diassign
+                ->orWhereHas('deliveryDetails', function ($q) use ($delivery) {
+                    $q->where('delivery_id', $delivery->id); // sudah bagian dari pengiriman ini
+                });
+        })->get();
+
+        // dd($pakets);
+        return view('deliveries.partials.edit', compact('delivery', 'couriers', 'pakets'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'courier_name' => 'required|string',
+            'paket_ids' => 'required|array|min:1'
+        ]);
+
+        $delivery = Delivery::findOrFail($id);
+        $delivery->update([
+            'courier_name' => $request->courier_name,
+            'notes' => $request->notes,
+        ]);
+
+        $delivery->details()->delete();
+        foreach ($request->paket_ids as $paketId) {
+            DeliveryDetail::create([
+                'delivery_id' => $delivery->id,
+                'paket_id' => $paketId
+            ]);
+        }
+
+        $this->getOptimizedRoute($delivery->kode_pengiriman);
+
+
+        return redirect()->route('deliveries.index')->with('success', 'Pengiriman berhasil diperbarui.');
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -139,7 +182,6 @@ class DeliveryController extends Controller
             ->where('kode_pengiriman', $kode_pengiriman)
             ->firstOrFail();
 
-        // ✅ Return cached route if exists
         if ($delivery->route) {
             return response()->json([
                 'optimized_route' => $delivery->route->optimized_route,
@@ -150,7 +192,7 @@ class DeliveryController extends Controller
             ]);
         }
 
-        // ✅ Build locations
+        // Build locations
         $locations = $delivery->details->map(function ($detail) {
             return [
                 'name' => $detail->paket->detail->nama_penerima ?? ('Paket #' . $detail->paket->id),
@@ -180,7 +222,7 @@ class DeliveryController extends Controller
         $points = array_keys($distanceMatrix);
         $destinations = array_diff($points, [$start]);
 
-        // ✅ Brute Force or Nearest Neighbor + 2OPT
+        // Brute Force or Nearest Neighbor + 2OPT
         if (count($destinations) <= 8) {
             $permutations = $this->generatePermutations(array_values($destinations));
             $minDist = INF;
@@ -204,7 +246,7 @@ class DeliveryController extends Controller
             }
         }
 
-        // ✅ Fetch route details from OSRM
+        // Fetch route details from OSRM
         $locationMap = collect($locations)->keyBy('name');
         $routeDetails = [];
         for ($i = 0; $i < count($bestRoute) - 1; $i++) {
@@ -221,7 +263,7 @@ class DeliveryController extends Controller
             ];
         }
 
-        // ✅ Simpan hasil ke tabel delivery_routes
+        // Simpan hasil ke tabel delivery_routes
         $delivery->route()->create([
             'optimized_route' => $bestRoute,
             'distance_matrix' => $distanceMatrix,
@@ -415,47 +457,4 @@ class DeliveryController extends Controller
             'duration' => $route['duration'] / 60
         ];
     }
-
-
-    // public function getOptimizedRoute(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'locations' => 'required|array|min:2',
-    //         'locations.*.lat' => 'required|numeric',
-    //         'locations.*.lng' => 'required|numeric',
-    //     ]);
-
-    //     $input = $validated['locations'];
-
-    //     // Snap all input locations to nearest node in shadow map
-    //     $nodes = [];
-    //     foreach ($input as $i => $loc) {
-    //         $name = 'P' . $i;
-    //         $nearest = $this->routing->snapToNearestNode($loc['lat'], $loc['lng']);
-    //         if ($nearest) {
-    //             $nodes[$name] = $nearest;
-    //         }
-    //     }
-
-    //     // Add warehouse manually
-    //     $warehouseCoord = ['lat' => -6.311175188123682, 'lng' => 106.80015942879892];
-    //     $warehouseNode = $this->routing->snapToNearestNode($warehouseCoord['lat'], $warehouseCoord['lng']);
-    //     $nodes = array_merge(['Warehouse' => $warehouseNode], $nodes);
-
-    //     $routeResult = $this->routing->solveTSPBruteForce(array_values($nodes), $warehouseNode);
-
-    //     $fullCoords = [];
-    //     foreach ($routeResult['route'] as $name) {
-    //         $fullCoords[] = [
-    //             'name' => $name,
-    //             'coordinate' => $this->routing->getCoordinates($name)
-    //         ];
-    //     }
-
-    //     return response()->json([
-    //         'route' => $routeResult['route'],
-    //         'total_distance_km' => $routeResult['total_distance_km'],
-    //         'coordinates' => $fullCoords,
-    //     ]);
-    // }
 }

@@ -6,9 +6,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="card-title mb-0">Pakets</h4>
+                    <h4 class="card-title mb-0">Users</h4>
                     <a type="button" class="btn btn-success btn-icon-text" href="{{ route('pakets.create') }}">
-                        <i class="mdi mdi-plus"></i> Add Paket
+                        <i class="mdi mdi-plus"></i> Add User
                     </a>
                 </div>
 
@@ -16,14 +16,14 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th> Delivery Date </th>
-                                <th> Paket Code </th>
-                                <th> Penerima </th>
+                                <th> User Name </th>
+                                <th> Role </th>
                                 <th> Status </th>
+                                {{-- <th> Status </th> --}}
                                 <th> Action </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        {{-- <tbody>
                             @forelse ($pakets as $paket)
 
                             @php
@@ -63,7 +63,7 @@
                             </div>
                             @endforelse
 
-                        </tbody>
+                        </tbody> --}}
                     </table>
                 </div>
             </div>

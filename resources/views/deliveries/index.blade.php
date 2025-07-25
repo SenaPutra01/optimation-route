@@ -16,21 +16,21 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>
+                                {{-- <th>
                                     <div class="form-check form-check-muted m-0">
                                         <label class="form-check-label">
                                             <input type="checkbox" class="form-check-input">
                                         </label>
                                     </div>
-                                </th>
+                                </th> --}}
+                                <th> Delivered At </th>
                                 <th> Delivery Code </th>
                                 <th> Courier Name </th>
                                 <th> Status </th>
                                 <th> Schedule At </th>
-                                <th> Delivered At </th>
                                 <th> Notes </th>
-                                <th> Created At </th>
-                                <th> Updated At </th>
+                                {{-- <th> Created At </th>
+                                <th> Updated At </th> --}}
                                 <th> Action </th>
                             </tr>
                         </thead>
@@ -45,30 +45,29 @@
                             @endphp
 
                             <tr>
-                                <td>
+                                {{-- <td>
                                     <div class="form-check form-check-muted m-0">
                                         <label class="form-check-label">
                                             <input type="checkbox" class="form-check-input">
                                         </label>
                                     </div>
-                                </td>
+                                </td> --}}
+                                <td> {{ $delivery->scheduled_at }} </td>
                                 <td>
-                                    {{ $delivery->kode_pengiriman }}
+                                    <a href="{{ route('deliveries.show', $delivery->id) }}"
+                                        class="btn btn-sm btn-dark">{{ $delivery->kode_pengiriman }}</a>
                                 </td>
                                 <td>{{ $delivery->courier_name }}</td>
                                 <td>
                                     <label class="badge {{ $statusClass }}">{{ ucfirst($delivery->status) }}</label>
                                 </td>
-                                <td> {{ $delivery->scheduled_at }} </td>
                                 <td> {{ $delivery->delivered_at }} </td>
                                 <td> {{ $delivery->notes }} </td>
-                                <td> {{ $delivery->created_at }} </td>
-                                <td> {{ $delivery->updated_at }} </td>
+                                {{-- <td> {{ $delivery->created_at }} </td>
+                                <td> {{ $delivery->updated_at }} </td> --}}
                                 <td>
                                     <form onsubmit="return confirm('Apakah Anda Yakin ?');"
                                         action="{{ route('deliveries.destroy', $delivery->id) }}" method="POST">
-                                        <a href="{{ route('deliveries.show', $delivery->id) }}"
-                                            class="btn btn-sm btn-dark">SHOW</a>
                                         <a href="{{ route('deliveries.edit', $delivery->id) }}"
                                             class="btn btn-sm btn-primary">EDIT</a>
                                         @csrf

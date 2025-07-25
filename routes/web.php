@@ -5,6 +5,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\PaketController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RouteController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -19,6 +20,7 @@ Route::get('/', function () {
 Route::resource('/dashboard', DashboardController::class);
 Route::resource('/pakets', PaketController::class);
 Route::resource('/deliveries', DeliveryController::class);
+Route::resource('/users', UserController::class);
 
 Route::get('/deliveries/{kodePengiriman}/route', [DeliveryController::class, 'getOptimizedRoute'])->name('deliveries.route');
 Route::get('/optimized-route', [DeliveryController::class, 'getOptimizedRoute'])->name('deliveries.optimize');

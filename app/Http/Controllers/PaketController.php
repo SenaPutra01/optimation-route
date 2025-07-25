@@ -17,7 +17,7 @@ class PaketController extends Controller
      */
     public function index(): View
     {
-        $pakets = Paket::latest()->paginate(10);
+        $pakets = Paket::with('detail')->latest()->paginate(10);
         return view('pakets.index', compact('pakets'));
     }
 

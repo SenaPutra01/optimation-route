@@ -84,8 +84,8 @@
                 <span class="menu-title">Deliveries</span>
             </a>
         </li>
-        <li class="nav-item menu-items">
-            <a class="nav-link" href="../../pages/icons/mdi.html">
+        <li class="nav-item menu-items {{ request()->routeIs('users.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('users.index') }}">
                 <span class="menu-icon">
                     <i class="mdi mdi-account-multiple"></i>
                 </span>

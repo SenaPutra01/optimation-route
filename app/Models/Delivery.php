@@ -24,10 +24,25 @@ class Delivery extends Model
         'delivered_at' => 'datetime',
     ];
 
-    public function paket()
+    // public function paket()
+    // {
+    //     return $this->belongsTo(Paket::class);
+    //     // return $this->belongsToMany(Paket::class, 'delivery_details', 'delivery_id', 'paket_id');
+    // }
+
+    public function pakets()
     {
-        return $this->belongsTo(Paket::class);
+        return $this->hasManyThrough(
+            \App\Models\Paket::class,          // Model tujuan
+            \App\Models\DeliveryDetail::class, // Tabel perantara (pivot)
+            'delivery_id', // Foreign key di delivery_details
+            'id',          // Primary key di tabel paket
+            'id',          // Local key di tabel delivery
+            'paket_id'     // Foreign key di delivery_details ke paket
+        );
     }
+
+
     public function details()
     {
         return $this->hasMany(DeliveryDetail::class);

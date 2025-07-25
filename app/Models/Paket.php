@@ -25,4 +25,8 @@ class Paket extends Model
     {
         return $this->hasOne(PaketDetail::class);
     }
+    public function deliveryDetails()
+    {
+        return $this->hasMany(DeliveryDetail::class, 'paket_id');
+    }
 }

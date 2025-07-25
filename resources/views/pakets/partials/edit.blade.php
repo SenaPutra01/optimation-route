@@ -15,7 +15,8 @@
         </div>
         @endif
 
-        <form action="{{ route('pakets.update', $paket->id) }}" method="POST">
+        <form onsubmit="return confirm('Apakah Anda Yakin ?')" action=" {{ route('pakets.update', $paket->id) }}"
+            method="POST">
             @csrf
             @method('PUT')
             <p class="card-description"> Paket Details </p>
