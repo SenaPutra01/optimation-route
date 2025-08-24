@@ -16,7 +16,7 @@
                     </div>
                     <div class="profile-name">
                         <h5 class="mb-0 font-weight-normal">{{ Auth::user()->name }}</h5>
-                        <span>Gold Member</span>
+                        <span>{{ Auth::user()->role }}</span>
                     </div>
                 </div>
                 <a href="#" id="profile-dropdown" data-toggle="dropdown"><i class="mdi mdi-dots-vertical"></i></a>
@@ -68,6 +68,7 @@
                 <span class="menu-title">Dashboard</span>
             </a>
         </li>
+        @if(Auth::user()->role === 'admin')
         <li class="nav-item menu-items {{ request()->routeIs('pakets.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pakets.index') }}">
                 <span class="menu-icon">
@@ -76,6 +77,7 @@
                 <span class="menu-title">Pakets</span>
             </a>
         </li>
+        @endif
         <li class="nav-item menu-items {{ request()->routeIs('deliveries.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('deliveries.index') }}">
                 <span class="menu-icon">
@@ -84,6 +86,8 @@
                 <span class="menu-title">Deliveries</span>
             </a>
         </li>
+
+        @if(Auth::user()->role === 'admin')
         <li class="nav-item menu-items {{ request()->routeIs('users.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('users.index') }}">
                 <span class="menu-icon">
@@ -92,7 +96,7 @@
                 <span class="menu-title">Users</span>
             </a>
         </li>
-        <li class="nav-item menu-items">
+        {{-- <li class="nav-item menu-items">
             <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
                 <span class="menu-icon">
                     <i class="mdi mdi-settings"></i>
@@ -100,6 +104,7 @@
                 <span class="menu-title">Settings</span>
                 <i class="menu-arrow"></i>
             </a>
+
             <div class="collapse" id="auth">
                 <ul class="nav flex-column sub-menu">
                     <li class="nav-item"> <a class="nav-link" href="../../pages/samples/blank-page.html"> Blank
@@ -114,6 +119,7 @@
                         </a></li>
                 </ul>
             </div>
-        </li>
+        </li> --}}
+        @endif
     </ul>
 </nav>

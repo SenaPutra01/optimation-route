@@ -29,15 +29,8 @@ Route::get('/optimized-route', [DeliveryController::class, 'getOptimizedRoute'])
 Route::post('/store-route-summary-polyline', [RouteController::class, 'storeSummaryPolyline']);
 Route::get('/route-summary/{kode_pengiriman}', [RouteController::class, 'getRouteSummary']);
 Route::get('/deliveries/route-data/{kodePengiriman}', [RouteController::class, 'getRouteData']);
-
-
-// Route::get('/pakets', function () {
-//     return view('pakets.index');
-// })->middleware(['auth', 'verified'])->name('pakets');
-
-// Route::get('/deliveries', function () {
-//     return view('deliveries.index');
-// })->middleware(['auth', 'verified'])->name('deliveries');
+Route::get('/pakets/barcodes/pending.pdf', [PaketController::class, 'downloadPendingBarcodesPdf'])
+    ->name('pakets.barcodes.pending.pdf');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

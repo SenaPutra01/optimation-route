@@ -7,9 +7,14 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="card-title mb-0">Pakets</h4>
+
                     <a type="button" class="btn btn-success btn-icon-text" href="{{ route('pakets.create') }}">
                         <i class="mdi mdi-plus"></i> Add Paket
                     </a>
+                    <a href="{{ route('pakets.barcodes.pending.pdf') }}" class="btn btn-primary mb-3">
+                        Download PDF Barcode (Pending)
+                    </a>
+
                 </div>
 
                 <div class="table-responsive">

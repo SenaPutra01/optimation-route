@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
+use Picqer\Barcode\BarcodeGeneratorPNG;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PaketController extends Controller
 {
@@ -174,5 +176,112 @@ class PaketController extends Controller
             DB::rollback();
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+
+    // public function downloadPendingBarcodesPdf()
+    // {
+    //     $pakets = Paket::select('id', 'kode_paket', 'tanggal_pengiriman', 'status')
+    //         ->whereRaw('LOWER(status) = ?', ['pending'])
+    //         ->orderBy('tanggal_pengiriman', 'asc')
+    //         ->get();
+
+    //     if ($pakets->isEmpty()) {
+    //         return redirect()->route('pakets.index')
+    //             ->with('error', 'Tidak ada paket berstatus Pending.');
+    //     }
+
+    //     $generator = new BarcodeGeneratorPNG();
+
+    //     // Siapkan data untuk view PDF: kode + barcode base64
+    //     $items = $pakets->map(function ($p) use ($generator) {
+    //         $kode = $p->kode_paket ?: ('PKT-' . $p->id);
+    //         // scale 3, height 80px (ubah sesuai kebutuhan)
+    //         $png = $generator->getBarcode($kode, $generator::TYPE_CODE_128, 3, 80);
+    //         $base64 = 'data:image/png;base64,' . base64_encode($png);
+
+    //         return [
+    //             'kode' => $kode,
+    //             'tanggal' => optional($p->tanggal_pengiriman)->format('Y-m-d') ?? '-',
+    //             'img' => $base64,
+    //         ];
+    //     });
+
+    //     $pdf = Pdf::loadView('pakets.pdf.barcodes', [
+    //         'items' => $items,
+    //         'title' => 'Pending Barcodes',
+    //     ])->setPaper('a4', 'portrait');
+
+    //     $filename = 'pending-barcodes-' . now()->format('Ymd_His') . '.pdf';
+    //     return $pdf->download($filename);
+    // }
+
+    // public function downloadPendingBarcodesPdf()
+    // {
+    //     $pakets = Paket::select('id', 'kode_paket', 'tanggal_pengiriman', 'status')
+    //         ->whereRaw('LOWER(status)=?', ['pending'])
+    //         ->orderBy('tanggal_pengiriman', 'asc')
+    //         ->get();
+
+    //     if ($pakets->isEmpty()) {
+    //         return redirect()->route('pakets.index')->with('error', 'Tidak ada paket Pending.');
+    //     }
+
+    //     $gen = new BarcodeGeneratorPNG();
+
+    //     $items = $pakets->map(function ($p) use ($gen) {
+    //         $kode = $p->kode_paket ?: ('PKT-' . $p->id);
+    //         $png  = $gen->getBarcode($kode, $gen::TYPE_CODE_128, 6, 150); // lebar & tinggi “scanner-friendly”
+    //         return [
+    //             'kode'    => $kode,
+    //             'tanggal' => optional($p->tanggal_pengiriman)->format('Y-m-d') ?? '-',
+    //             'img'     => 'data:image/png;base64,' . base64_encode($png),
+    //         ];
+    //     });
+
+    //     $pdf = Pdf::loadView('pakets.pdf.barcodes', [
+    //         'title' => 'Pending Barcodes',
+    //         'items' => $items,
+    //     ])->setPaper('a4', 'portrait');
+
+    //     $pdf->set_option('dpi', 150); // jaga garis tidak pecah
+    //     return $pdf->download('pending-barcodes-' . now()->format('Ymd_His') . '.pdf');
+    // }
+
+    public function downloadPendingBarcodesPdf()
+    {
+        $pakets = Paket::select('id', 'kode_paket', 'tanggal_pengiriman', 'status')
+            ->whereRaw('LOWER(status) = ?', ['pending'])
+            ->orderBy('tanggal_pengiriman', 'asc')
+            ->get();
+
+        if ($pakets->isEmpty()) {
+            return redirect()->route('pakets.index')->with('error', 'Tidak ada paket Pending.');
+        }
+
+        $gen = new BarcodeGeneratorPNG();
+
+        // === BARCODE BY ID (BUKAN kode_paket) ===
+        $items = $pakets->map(function ($p) use ($gen) {
+            $text = (string) $p->id; // <-- inilah yang di-encode ke barcode
+            // sesuaikan scale/height sesuai kebutuhan cetak
+            $png  = $gen->getBarcode($text, $gen::TYPE_CODE_128, 6, 150);
+
+            return [
+                'id'      => $p->id,
+                'kode'    => $p->kode_paket, // untuk ditampilkan sebagai info (opsional)
+                'tanggal' => optional($p->tanggal_pengiriman)->format('Y-m-d') ?? '-',
+                'img'     => 'data:image/png;base64,' . base64_encode($png),
+                'text'    => $text, // human-readable yang ditulis di bawah barcode
+            ];
+        });
+
+        $pdf = Pdf::loadView('pakets.pdf.barcodes', [
+            'title' => 'Pending Barcodes (by ID)',
+            'items' => $items,
+        ])->setPaper('a4', 'portrait');
+
+        $pdf->set_option('dpi', 150);
+        return $pdf->download('pending-barcodes-id-' . now()->format('Ymd_His') . '.pdf');
     }
 }

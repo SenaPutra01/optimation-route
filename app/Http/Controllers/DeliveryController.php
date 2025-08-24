@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\DeliveryDetail;
+use App\Models\Notification;
 use App\Models\Paket;
 use App\Models\User;
 use App\Services\ShadowMapRoutingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -38,11 +40,11 @@ class DeliveryController extends Controller
     public function create()
     {
         $couriers = User::all();
-        // $pakets = Paket::with('detail', 'location')->where('status', 'Pending')->get();
+
         $pakets = Paket::with('detail')
             ->whereDoesntHave('deliveryDetails')
             ->get();
-        // dd($pakets->toArray());
+
         return view('deliveries.partials.create', compact('couriers', 'pakets'));
     }
 
@@ -91,8 +93,22 @@ class DeliveryController extends Controller
 
             $this->getOptimizedRoute($existingDelivery->kode_pengiriman);
 
+            Notification::create([
+                'user_id' => $courier->id,
+                'title' => 'Pengiriman Baru',
+                'message' => 'Anda ditugaskan untuk pengiriman kode: ' . $kode_pengiriman,
+                'delivery_id' => $existingDelivery->id,
+            ]);
+
+
 
             DB::commit();
+
+            session()->flash('popup_notification', [
+                'title' => 'Pengiriman Baru',
+                'message' => 'Anda ditugaskan untuk pengiriman kode: ' . $kode_pengiriman,
+            ]);
+
             return redirect()->route('deliveries.index')->with(['success' => 'Paket berhasil diassign ke pengiriman', 'kode_paket' => $kode_pengiriman]);
         } catch (\Exception $e) {
             DB::rollBack();

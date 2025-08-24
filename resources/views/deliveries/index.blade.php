@@ -7,31 +7,27 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="card-title mb-0">Deliveries</h4>
+
+                    @if(Auth::user()->role === 'admin')
                     <a type="button" class="btn btn-success btn-icon-text" href="{{ route('deliveries.create') }}">
                         <i class="mdi mdi-plus"></i> Add Delivery
                     </a>
+                    @endif
                 </div>
 
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
-                                {{-- <th>
-                                    <div class="form-check form-check-muted m-0">
-                                        <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input">
-                                        </label>
-                                    </div>
-                                </th> --}}
                                 <th> Delivered At </th>
                                 <th> Delivery Code </th>
                                 <th> Courier Name </th>
                                 <th> Status </th>
                                 <th> Schedule At </th>
                                 <th> Notes </th>
-                                {{-- <th> Created At </th>
-                                <th> Updated At </th> --}}
+                                @if(Auth::user()->role === 'admin')
                                 <th> Action </th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -45,13 +41,6 @@
                             @endphp
 
                             <tr>
-                                {{-- <td>
-                                    <div class="form-check form-check-muted m-0">
-                                        <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input">
-                                        </label>
-                                    </div>
-                                </td> --}}
                                 <td> {{ $delivery->scheduled_at }} </td>
                                 <td>
                                     <a href="{{ route('deliveries.show', $delivery->id) }}"
@@ -63,8 +52,7 @@
                                 </td>
                                 <td> {{ $delivery->delivered_at }} </td>
                                 <td> {{ $delivery->notes }} </td>
-                                {{-- <td> {{ $delivery->created_at }} </td>
-                                <td> {{ $delivery->updated_at }} </td> --}}
+                                @if(Auth::user()->role === 'admin')
                                 <td>
                                     <form onsubmit="return confirm('Apakah Anda Yakin ?');"
                                         action="{{ route('deliveries.destroy', $delivery->id) }}" method="POST">
@@ -75,6 +63,7 @@
                                         <button type="submit" class="btn btn-sm btn-danger">HAPUS</button>
                                     </form>
                                 </td>
+                                @endif
                             </tr>
                             @empty
                             <div class="alert alert-danger">
